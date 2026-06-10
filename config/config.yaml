@@ -1,0 +1,157 @@
+# config/config.yaml — dRNA methylation pipeline
+# ================================================================
+# Edit the paths below to match your system.
+#
+# Modification selection, modkit pileup thresholds, paths, containers,
+# sample sheet, and output location are configured here.
+# ================================================================
+
+# ================================================================
+# OUTPUTS
+# ================================================================
+outdir: "results"
+
+# ================================================================
+# SINGULARITY
+# ================================================================
+# Set to "apptainer" on systems where Apptainer replaced Singularity.
+container_engine: "singularity"
+
+# Leave empty ("") if no bind mount is needed on your system.
+singularity_bind: "/SAN/vyplab:/SAN/vyplab"
+
+dorado_sif: "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/singularity/ontresearch-dorado-1.4.0.sif"
+modkit_sif: "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/ontresearch-modkit-0.6.1.sif"
+
+# ================================================================
+# DORADO MODELS
+# Full model names required when using --models-directory.
+# These are the models downloaded by dorado_models_download and passed
+# to dorado basecaller as a comma-separated model argument.
+# ================================================================
+dorado_models:
+  - "rna004_130bps_sup@v5.3.0"
+  - "rna004_130bps_sup@v5.3.0_inosine_m6A_2OmeA@v1"
+  - "rna004_130bps_sup@v5.3.0_m5C_2OmeC@v1"
+  - "rna004_130bps_sup@v5.3.0_pseU_2OmeU@v1"
+  - "rna004_130bps_sup@v5.3.0_2OmeG@v1"
+
+# Local directory for pre-downloaded dorado models.
+# Populated automatically by rule dorado_models_download.
+dorado_models_dir: "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/dorado_models"
+
+# ================================================================
+# MODKIT PILEUP
+# filter_thresholds are emitted as repeated --filter-threshold args.
+# Per-mod thresholds are normally read from modifications.*.mod_threshold
+# and emitted as repeated --mod-threshold args for modkit pileup.
+# Use mod_thresholds here only if you want to override that generated list.
+# ================================================================
+modkit:
+  pileup:
+    filter_thresholds:
+      - "0.7"
+    mod_thresholds: []
+    extra_args: []
+
+# ================================================================
+# MODIFICATIONS
+# primary_base plus code is emitted as a Modkit v0.6+ --modified-bases
+# entry, for example C:m or A:17596.
+# code is also the modkit pileup BED modification code in column 4.
+# output_suffix controls results/bedMethyl/{sample}.{suffix}.filtered.bed.
+# Disable a modification here to remove it from final outputs and QC.
+# Direct RNA uses T for uridine/pseudouridine because FASTA references
+# represent RNA as DNA alphabet.
+# ================================================================
+modifications:
+  m5C:
+    enabled: true
+    primary_base: "C"
+    code: "m"
+    output_suffix: "m5C"
+    mod_threshold: 0.99
+  m6A:
+    enabled: true
+    primary_base: "A"
+    code: "a"
+    output_suffix: "m6A"
+    mod_threshold: 0.99
+  inosine:
+    enabled: true
+    primary_base: "A"
+    code: "17596"
+    output_suffix: "inosine"
+    mod_threshold: 0.99
+  pseU:
+    enabled: true
+    primary_base: "T"
+    code: "17802"
+    output_suffix: "pseU"
+    mod_threshold: 0.99
+  2OmeC:
+    enabled: true
+    primary_base: "C"
+    code: "19228"
+    output_suffix: "2OmeC"
+    mod_threshold: 0.99
+  2OmeA:
+    enabled: true
+    primary_base: "A"
+    code: "69426"
+    output_suffix: "2OmeA"
+    mod_threshold: 0.99
+  2OmeG:
+    enabled: true
+    primary_base: "G"
+    code: "19229"
+    output_suffix: "2OmeG"
+    mod_threshold: 0.99
+  2OmeU:
+    enabled: true
+    primary_base: "T"
+    code: "19227"
+    output_suffix: "2OmeU"
+    mod_threshold: 0.99
+
+# ================================================================
+# REFERENCE FILES
+# ================================================================
+alignments:
+  genome:
+    enabled: true
+  transcriptome:
+    enabled: false
+
+genome:  "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/dorado_first_trial/resources/GRCh38.p14.genome.fa"
+transcriptome: "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/dorado_first_trial/resources/gencode.v49.transcripts.fa"
+gtf:     "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/dorado_first_trial/resources/gencode.v49.primary_assembly.annotation.gtf"
+
+# Junction BED for splice-aware alignment (pre-existing).
+# Generate once with: paftools.js gff2bed annotation.gtf > annotation.junc.bed
+gtf_bed: "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/dorado_first_trial/resources/gencode.v49.basic.annotation.junc.bed"
+
+# ================================================================
+# FILTERBED THRESHOLDS
+# Applied a posteriori on the raw modkit pileup BED.
+# Change these values and re-run filterbed without re-running pileup:
+#   snakemake --forcerun filterbed
+#
+# min_coverage: minimum number of valid reads covering a site
+#               (col 5 of modkit pileup BED)
+# mod_pct:      minimum percentage of modified reads per site
+#               (col 11 of modkit pileup BED, range 0-100)
+# ================================================================
+min_coverage: 5
+mod_pct:      5
+
+# ================================================================
+# SAMPLESHEET
+# Must be a CSV file. The filename can be anything.
+# Accepted sample-name headers: sample, sample_id, sampleid, id, name
+# Accepted pod5-directory headers: pod5_dir, pod5_directory, pod5_path,
+# pod5, raw_dir, raw_path, path
+# Additional metadata columns such as group,condition,replicate are
+# preserved in provenance and available for future downstream analysis.
+# ================================================================
+samplesheet: "config/samples.csv"
