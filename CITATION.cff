@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this workflow, please cite it using these metadata."
+title: "dRNA Methylation Pipeline"
+abstract: >-
+  A Snakemake workflow for Oxford Nanopore direct RNA sequencing (dRNA-seq):
+  Dorado basecalling with RNA modification models, minimap2 alignment to genome
+  and/or transcriptome, Modkit modification pileup, bedMethyl filtering, and
+  aggregate QC (NanoPlot and MultiQC).
+type: software
+authors:
+  # TODO: complete family-names / affiliation / ORCID before release.
+  - given-names: Darius
+    email: dariusng28@gmail.com
+keywords:
+  - nanopore
+  - direct-RNA-sequencing
+  - RNA-modifications
+  - m6A
+  - basecalling
+  - snakemake
+license: MIT
+repository-code: "https://github.com/dariusng28-collab/dRNAmodcaller"

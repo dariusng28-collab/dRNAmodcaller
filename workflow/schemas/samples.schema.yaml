@@ -1,0 +1,23 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+description: Normalized dRNA methylation samplesheet
+type: object
+required:
+  - samples
+properties:
+  samples:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      additionalProperties: true
+      required:
+        - sample
+        - pod5_dir
+      properties:
+        sample:
+          type: string
+          minLength: 1
+          pattern: "^[A-Za-z0-9_.+-]+$"
+        pod5_dir:
+          type: string
+          minLength: 1

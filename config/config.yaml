@@ -12,7 +12,7 @@
 outdir: "results"
 
 # ================================================================
-# SINGULARITY
+# CONTAINERS
 # ================================================================
 # Set to "apptainer" on systems where Apptainer replaced Singularity.
 container_engine: "singularity"
@@ -20,8 +20,9 @@ container_engine: "singularity"
 # Leave empty ("") if no bind mount is needed on your system.
 singularity_bind: "/SAN/vyplab:/SAN/vyplab"
 
-dorado_sif: "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/singularity/ontresearch-dorado-1.4.0.sif"
-modkit_sif: "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/ontresearch-modkit-0.6.1.sif"
+# Local .sif paths or container URIs such as docker://ontresearch/modkit:0.6.3.
+dorado_container: "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/singularity/ontresearch-dorado-1.4.0.sif"
+modkit_container: "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/ontresearch-modkit-0.6.1.sif"
 
 # ================================================================
 # DORADO MODELS
@@ -39,6 +40,13 @@ dorado_models:
 # Local directory for pre-downloaded dorado models.
 # Populated automatically by rule dorado_models_download.
 dorado_models_dir: "/SAN/vyplab/first_weeks/recalled_nanopore/Marcello/dorado_models"
+
+# Number of pod5 files to basecall per GPU job.
+# 0 (default) basecalls each sample's whole pod5 directory in a single dorado
+# invocation, which loads the models onto the GPU only once per sample.
+# Set to a positive integer (e.g. 50) to split very large samples across
+# multiple GPUs at the cost of extra model-load overhead per chunk.
+basecall_chunk_size: 0
 
 # ================================================================
 # MODKIT PILEUP

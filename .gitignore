@@ -1,7 +1,14 @@
 results/
 logs/
+.snakemake/
+resources/
+__pycache__/
+*.pyc
 *.bam
 *.bai
 *.bed
+*.bed.gz
+*.tsv
+*.html
 *.pod5
 *.sif

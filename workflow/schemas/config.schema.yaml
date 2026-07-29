@@ -1,0 +1,139 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+description: dRNA methylation pipeline configuration
+type: object
+additionalProperties: true
+required:
+  - outdir
+  - samplesheet
+  - dorado_models
+  - dorado_models_dir
+  - modifications
+  - alignments
+  - modkit
+  - min_coverage
+  - mod_pct
+properties:
+  outdir:
+    type: string
+    minLength: 1
+  samplesheet:
+    type: string
+    minLength: 1
+  container_engine:
+    type: string
+    enum: ["singularity", "apptainer"]
+    default: "singularity"
+  singularity_bind:
+    type: string
+    default: ""
+  dorado_container:
+    type: string
+  dorado_sif:
+    type: string
+  modkit_container:
+    type: string
+  modkit_sif:
+    type: string
+  dorado_models:
+    type: array
+    minItems: 1
+    items:
+      type: string
+      minLength: 1
+  dorado_models_dir:
+    type: string
+    minLength: 1
+  basecall_chunk_size:
+    type: integer
+    minimum: 0
+    default: 0
+  alignments:
+    type: object
+    minProperties: 1
+    additionalProperties:
+      type: object
+      additionalProperties: true
+      properties:
+        enabled:
+          type: boolean
+        reference:
+          type: string
+        reference_key:
+          type: string
+        mode:
+          type: string
+          enum: ["genome", "transcriptome"]
+        juncbed:
+          type: string
+        preload_references:
+          type: boolean
+  genome:
+    type: string
+  transcriptome:
+    type: string
+  gtf:
+    type: string
+  gtf_bed:
+    type: string
+  modkit:
+    type: object
+    required:
+      - pileup
+    properties:
+      pileup:
+        type: object
+        additionalProperties: false
+        properties:
+          filter_thresholds:
+            type: array
+            items:
+              type: string
+          mod_thresholds:
+            type: array
+            items:
+              type: string
+          extra_args:
+            type: array
+            items:
+              type: string
+  modifications:
+    type: object
+    minProperties: 1
+    additionalProperties:
+      type: object
+      additionalProperties: false
+      required:
+        - primary_base
+        - code
+        - output_suffix
+      properties:
+        enabled:
+          type: boolean
+          default: true
+        primary_base:
+          type: string
+          enum: ["A", "C", "G", "T"]
+        canonical_base:
+          type: string
+          enum: ["A", "C", "G", "T"]
+        code:
+          type: string
+          minLength: 1
+        output_suffix:
+          type: string
+          minLength: 1
+        mod_threshold:
+          type: number
+          minimum: 0
+          maximum: 1
+        threshold:
+          type: number
+          minimum: 0
+          maximum: 1
+  min_coverage:
+    type: integer
+    minimum: 0
+  mod_pct:
+    type: number
+    minimum: 0
+    maximum: 100

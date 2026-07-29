@@ -1,0 +1,33 @@
+configfile: "config/config.yaml"
+
+include: "rules/common.smk"
+
+rule all:
+    input:
+        expand(
+            out_path("bedMethyl/{alignment}/{sample}.{mod}.filtered.bed"),
+            alignment=ALIGNMENT_NAMES,
+            sample=SAMPLES,
+            mod=MOD_OUTPUT_SUFFIXES,
+        ),
+        expand(
+            out_path("sample_probs/{alignment}/{sample}/probabilities.tsv"),
+            alignment=ALIGNMENT_NAMES,
+            sample=SAMPLES,
+        ),
+        expand(
+            out_path("qc/{alignment}/{sample}.qc_summary.txt"),
+            alignment=ALIGNMENT_NAMES,
+            sample=SAMPLES,
+        ),
+        out_path("qc/multiqc/multiqc_report.html"),
+        out_path("provenance/config.resolved.yaml"),
+        out_path("provenance/run_metadata.txt")
+    default_target: True
+
+
+include: "rules/reference.smk"
+include: "rules/basecalling.smk"
+include: "rules/alignment.smk"
+include: "rules/modkit.smk"
+include: "rules/qc.smk"

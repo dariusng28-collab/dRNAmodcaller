@@ -1,0 +1,15 @@
+executor: sge
+jobs: 40
+use-conda: true
+rerun-incomplete: true
+restart-times: 4
+latency-wait: 100
+rerun-triggers:
+  - mtime
+resources:
+  - gpu=2
+default-resources:
+  - mem_mb=4000
+  - runtime=120
+sge-keep-successful-logs: true
+sge-logdir: results/logs/cluster
