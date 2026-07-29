@@ -5,8 +5,8 @@ rule minimap2_index:
         mmi=out_path("references/index/{alignment}.mmi")
     log:
         log_path("minimap2_index/{alignment}.log")
-    conda:
-        workflow_path("workflow/envs/minimap.yaml")
+    container:
+        MINIMAP_CONTAINER
     threads: 4
     resources:
         mem_mb=32000,
@@ -31,8 +31,8 @@ rule minimap2_align:
         bai=out_path("bams/{alignment}/{sample}/{sample}.bam.bai")
     log:
         log_path("minimap2/{alignment}/{sample}.log")
-    conda:
-        workflow_path("workflow/envs/minimap.yaml")
+    container:
+        MINIMAP_CONTAINER
     threads: 4
     resources:
         mem_mb=48000,

@@ -6,8 +6,8 @@ if "genome" in ALIGNMENTS and GENERATE_GTF_BED:
             bed=JUNC_BED
         log:
             log_path("references/gtf_to_juncbed.log")
-        conda:
-            workflow_path("workflow/envs/minimap.yaml")
+        container:
+            MINIMAP_CONTAINER
         resources:
             mem_mb=4000,
             runtime=60

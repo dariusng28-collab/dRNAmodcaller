@@ -44,11 +44,6 @@ dRNA_methylation/
 |   |   |-- alignment.smk
 |   |   |-- modkit.smk
 |   |   `-- qc.smk
-|   |-- envs/
-|   |   |-- minimap.yaml
-|   |   |-- nanoplot.yaml
-|   |   |-- multiqc.yaml
-|   |   `-- postprocess.yaml
 |   |-- schemas/
 |   |   |-- config.schema.yaml
 |   |   `-- samples.schema.yaml
@@ -69,18 +64,23 @@ There is no top-level `Snakefile`: Snakemake automatically discovers
 
 ## Requirements
 
-- Snakemake with conda and container support.
-- Singularity or Apptainer for Dorado and Modkit containers.
-- Conda or Mamba for the minimap2/samtools, NanoPlot, and MultiQC environments
-  (created automatically from `workflow/envs/` with `--use-conda`).
+- Snakemake with container support.
+- Singularity or Apptainer. **Every rule runs in a container — no conda
+  required.** Dorado and Modkit use local `.sif` images (or ONT image URIs); the
+  generic tools (minimap2/samtools, NanoPlot, MultiQC, Python) use pinned public
+  images that Snakemake pulls automatically on first run.
 - Optional: `snakemake-executor-plugin-sge` for SGE cluster execution.
 
-Recommended containers:
+Dorado and Modkit are the only images you supply. Pull them once, e.g.:
 
 ```bash
 singularity pull ontresearch-dorado-1.4.0.sif docker://ontresearch/dorado:1.4.0
-singularity pull ontresearch-modkit-0.6.3.sif docker://ontresearch/modkit:0.6.3
+singularity pull ontresearch-modkit.sif docker://ontresearch/modkit:latest
 ```
+
+The other images are defined (and overridable) in `config/config.yaml` under
+`minimap_container`, `nanoplot_container`, `multiqc_container`, and
+`python_container`, with pinned defaults so nothing else needs configuring.
 
 ## Configuration
 
@@ -164,7 +164,7 @@ snakemake -n --configfile config/config.yaml
 Run locally:
 
 ```bash
-snakemake --cores 8 --use-conda --use-singularity --configfile config/config.yaml
+snakemake --cores 8 --use-singularity --configfile config/config.yaml
 ```
 
 For Apptainer installations, replace `--use-singularity` with `--use-apptainer`.
@@ -234,9 +234,10 @@ The workflow produces QC at three levels:
 ## Reproducibility
 
 Every run writes `provenance/config.resolved.yaml` (the fully resolved
-configuration) and `provenance/run_metadata.txt`. Software versions are pinned
-in `workflow/envs/*.yaml` and in the Dorado/Modkit container tags, so a run can
-be reproduced from the provenance record plus the pinned environments.
+configuration) and `provenance/run_metadata.txt`. Every tool runs in a
+version-pinned container, so the image references recorded in the provenance
+metadata are the authoritative software-version record — a run can be reproduced
+from the provenance file plus those images.
 
 ## Developer Checks
 

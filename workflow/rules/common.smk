@@ -15,6 +15,26 @@ BIND = config.get("singularity_bind", "")
 DORADO_CONTAINER = config.get("dorado_container", config.get("dorado_sif", ""))
 MODKIT_CONTAINER = config.get("modkit_container", config.get("modkit_sif", ""))
 
+# Public container images for the generic tools. Overridable via config; the
+# defaults are pinned, widely-mirrored images so every rule is fully
+# containerised (no conda required).
+MINIMAP_CONTAINER = config.get(
+    "minimap_container",
+    "docker://quay.io/biocontainers/mulled-v2-66534bcbb7031a148b13e2ad42583020b9cd25c4:365b17b986c1a60c1b82c6066a9345f38317b763-0",
+)
+NANOPLOT_CONTAINER = config.get(
+    "nanoplot_container",
+    "docker://quay.io/biocontainers/nanoplot:1.44.1--pyhdfd78af_0",
+)
+MULTIQC_CONTAINER = config.get(
+    "multiqc_container",
+    "docker://multiqc/multiqc:v1.25",
+)
+PYTHON_CONTAINER = config.get(
+    "python_container",
+    "docker://python:3.12-slim",
+)
+
 
 def out_path(path):
     return f"{OUTDIR}/{path}"

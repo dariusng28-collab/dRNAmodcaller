@@ -34,6 +34,14 @@ properties:
     type: string
   modkit_sif:
     type: string
+  minimap_container:
+    type: string
+  nanoplot_container:
+    type: string
+  multiqc_container:
+    type: string
+  python_container:
+    type: string
   dorado_models:
     type: array
     minItems: 1

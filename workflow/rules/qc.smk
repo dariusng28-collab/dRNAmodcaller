@@ -7,8 +7,8 @@ rule run_provenance:
         metadata=out_path("provenance/run_metadata.txt")
     log:
         logfile=log_path("provenance/run_metadata.log")
-    conda:
-        workflow_path("workflow/envs/minimap.yaml")
+    container:
+        PYTHON_CONTAINER
     params:
         config_data=dict(config),
         alignments=ALIGNMENTS,
@@ -19,7 +19,11 @@ rule run_provenance:
         container_engine=CONTAINER_ENGINE,
         bind=BIND,
         dorado_container=DORADO_CONTAINER,
-        modkit_container=MODKIT_CONTAINER
+        modkit_container=MODKIT_CONTAINER,
+        minimap_container=MINIMAP_CONTAINER,
+        nanoplot_container=NANOPLOT_CONTAINER,
+        multiqc_container=MULTIQC_CONTAINER,
+        python_container=PYTHON_CONTAINER
     resources:
         mem_mb=1000,
         runtime=30
@@ -41,8 +45,8 @@ rule qc_report:
         report=out_path("qc/{alignment}/{sample}.qc_summary.txt")
     log:
         log_path("qc/{alignment}/{sample}.log")
-    conda:
-        workflow_path("workflow/envs/minimap.yaml")
+    container:
+        MINIMAP_CONTAINER
     threads: 2
     resources:
         mem_mb=8000,
@@ -117,8 +121,8 @@ rule samtools_stats:
         idxstats=out_path("qc/samtools/{alignment}.{sample}.idxstats.txt")
     log:
         log_path("samtools_stats/{alignment}/{sample}.log")
-    conda:
-        workflow_path("workflow/envs/minimap.yaml")
+    container:
+        MINIMAP_CONTAINER
     threads: 2
     resources:
         mem_mb=4000,
@@ -140,8 +144,8 @@ rule nanoplot:
         stats=out_path("qc/nanoplot/{sample}/{sample}.NanoStats.txt")
     log:
         log_path("nanoplot/{sample}.log")
-    conda:
-        workflow_path("workflow/envs/nanoplot.yaml")
+    container:
+        NANOPLOT_CONTAINER
     threads: 4
     resources:
         mem_mb=8000,
@@ -189,8 +193,8 @@ rule multiqc:
         report=out_path("qc/multiqc/multiqc_report.html")
     log:
         log_path("multiqc/multiqc.log")
-    conda:
-        workflow_path("workflow/envs/multiqc.yaml")
+    container:
+        MULTIQC_CONTAINER
     resources:
         mem_mb=8000,
         runtime=60

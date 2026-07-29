@@ -1,6 +1,5 @@
 executor: sge
 jobs: 40
-use-conda: true
 rerun-incomplete: true
 restart-times: 4
 latency-wait: 100

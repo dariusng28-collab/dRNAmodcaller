@@ -1,9 +1,7 @@
 from pathlib import Path
 import datetime
 import hashlib
-import subprocess
-
-import yaml
+import json
 
 
 def sha256_file(path):
@@ -14,55 +12,28 @@ def sha256_file(path):
     return h.hexdigest()
 
 
-def command_output(args):
-    try:
-        completed = subprocess.run(
-            args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            check=False,
-        )
-        text = completed.stdout.strip()
-        if completed.returncode != 0:
-            return f"exit {completed.returncode}: {text}"
-        return text
-    except Exception as exc:
-        return f"unavailable: {exc}"
-
-
-def container_command(container):
-    bind = snakemake.params.bind
-    engine = snakemake.params.container_engine
-    bind_args = ["-B", bind] if bind else []
-    return [engine, "exec"] + bind_args + [container]
-
-
 Path(str(snakemake.output.metadata)).parent.mkdir(parents=True, exist_ok=True)
 Path(str(snakemake.log.logfile)).parent.mkdir(parents=True, exist_ok=True)
 
+# Written as JSON (a valid YAML subset) so the provenance rule needs no PyYAML,
+# letting it run in a minimal python container.
 with open(snakemake.output.config_copy, "w") as fh:
-    yaml.safe_dump(dict(snakemake.params.config_data), fh, sort_keys=False)
+    json.dump(dict(snakemake.params.config_data), fh, indent=2, default=str)
+    fh.write("\n")
 
-dorado_version = command_output(
-    container_command(snakemake.params.dorado_container) + ["dorado", "--version"]
-)
-modkit_version = command_output(
-    container_command(snakemake.params.modkit_container) + ["modkit", "--version"]
-)
-minimap2_version = command_output(["minimap2", "--version"])
-samtools_version = command_output(["samtools", "--version"])
-
+# Every tool runs in a version-pinned container, so the image references are the
+# authoritative software-version record for the run.
 lines = [
     f"generated_at: {datetime.datetime.now().isoformat(timespec='seconds')}",
     f"outdir: {snakemake.params.outdir}",
     f"container_engine: {snakemake.params.container_engine}",
-    f"dorado_container: {snakemake.params.dorado_container}",
-    f"modkit_container: {snakemake.params.modkit_container}",
-    f"dorado_version: {dorado_version}",
-    f"modkit_version: {modkit_version}",
-    f"minimap2_version: {minimap2_version.splitlines()[0] if minimap2_version else ''}",
-    f"samtools_version: {samtools_version.splitlines()[0] if samtools_version else ''}",
+    "containers:",
+    f"  dorado:            {snakemake.params.dorado_container}",
+    f"  modkit:            {snakemake.params.modkit_container}",
+    f"  minimap2_samtools: {snakemake.params.minimap_container}",
+    f"  nanoplot:          {snakemake.params.nanoplot_container}",
+    f"  multiqc:           {snakemake.params.multiqc_container}",
+    f"  python:            {snakemake.params.python_container}",
     "dorado_models:",
 ]
 lines.extend(f"  - {model}" for model in snakemake.params.dorado_models)

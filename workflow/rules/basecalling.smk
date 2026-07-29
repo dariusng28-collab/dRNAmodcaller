@@ -88,8 +88,8 @@ rule merge_unaligned_bam:
         bam=out_path("basecalled/{sample}/{sample}.merged.unaligned.bam")
     log:
         log_path("merge_unaligned/{sample}.log")
-    conda:
-        workflow_path("workflow/envs/minimap.yaml")
+    container:
+        MINIMAP_CONTAINER
     threads: 2
     resources:
         mem_mb=8000,

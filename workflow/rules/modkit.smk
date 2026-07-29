@@ -99,8 +99,8 @@ rule filterbed:
         bed=out_path("bedMethyl/{alignment}/{sample}.filtered.bed")
     log:
         log_path("filterbed/{alignment}/{sample}.log")
-    conda:
-        workflow_path("workflow/envs/postprocess.yaml")
+    container:
+        PYTHON_CONTAINER
     params:
         min_coverage=config["min_coverage"],
         mod_pct=config["mod_pct"]
@@ -128,8 +128,8 @@ rule splitbed:
         beds=MOD_SPLIT_OUTPUTS
     log:
         log_path("splitbed/{alignment}/{sample}.log")
-    conda:
-        workflow_path("workflow/envs/postprocess.yaml")
+    container:
+        PYTHON_CONTAINER
     params:
         modifications=MODIFICATIONS
     resources:
