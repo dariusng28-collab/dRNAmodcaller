@@ -82,6 +82,21 @@ The other images are defined (and overridable) in `config/config.yaml` under
 `minimap_container`, `nanoplot_container`, `multiqc_container`, and
 `python_container`, with pinned defaults so nothing else needs configuring.
 
+### Container image caching on HPC
+
+Converting a docker image to a Singularity `.sif` unpacks tens of thousands of
+small files, which is slow on network storage and fails if the site's default
+`SINGULARITY_TMPDIR` points somewhere that does not exist on the submit host.
+`submit.sh` therefore builds images on **node-local disk** and stores the built
+images in a **persistent, shared prefix** so they are pulled once and reused
+across runs (compute nodes read them over the shared filesystem). Override the
+defaults in `config/config.yaml` if needed:
+
+- `singularity_tmpdir`: fast local scratch for the SIF build (default `/tmp`).
+- `singularity_prefix`: shared directory of built images (default
+  `<outdir>/singularity`). Point this at a stable location to reuse images
+  across working directories.
+
 ## Configuration
 
 Edit `config/config.yaml`.

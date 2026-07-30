@@ -148,20 +148,24 @@ rule nanoplot:
         NANOPLOT_CONTAINER
     threads: 4
     resources:
-        mem_mb=8000,
-        runtime=120,
+        mem_mb=16000,
+        runtime=720,
         sge_pe="smp"
     params:
         outdir=lambda w, output: os.path.dirname(output.stats),
-        prefix="{sample}."
+        prefix="{sample}.",
+        downsample=config.get("nanoplot_downsample", 500000)
     shell:
         """
         mkdir -p {params.outdir} $(dirname {log})
         # Alignment-independent read QC (length N50, quality) from the raw
-        # (unaligned) basecalled reads.
+        # (unaligned) basecalled reads. dRNA BAMs can be tens of millions of
+        # reads; QC distributions are unchanged by random-sampling a subset,
+        # which keeps this fast instead of iterating the whole (multi-GB) file.
         NanoPlot \
             --ubam {input.bam} \
             --threads {threads} \
+            --downsample {params.downsample} \
             --outdir {params.outdir} \
             --prefix {params.prefix} \
             2> {log}

@@ -1,5 +1,6 @@
 executor: sge
 jobs: 40
+keep-going: true
 rerun-incomplete: true
 restart-times: 4
 latency-wait: 100

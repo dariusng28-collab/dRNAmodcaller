@@ -26,6 +26,10 @@ properties:
   singularity_bind:
     type: string
     default: ""
+  singularity_tmpdir:
+    type: string
+  singularity_prefix:
+    type: string
   dorado_container:
     type: string
   dorado_sif:
@@ -138,6 +142,9 @@ properties:
           type: number
           minimum: 0
           maximum: 1
+  nanoplot_downsample:
+    type: integer
+    minimum: 1
   min_coverage:
     type: integer
     minimum: 0
