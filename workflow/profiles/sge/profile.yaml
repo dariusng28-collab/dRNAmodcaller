@@ -1,8 +1,21 @@
-executor: sge
+# SGE profile using the cluster-generic executor.
+# The dedicated `sge` executor plugin relies on `qacct` for job status, which is
+# not available on this cluster (accounting file unreadable), so jobs never get
+# marked complete. cluster-generic instead submits via a qsub wrapper and polls
+# `qstat`, which works without qacct. See workflow/scripts/sge_submit.py and
+# workflow/scripts/sge_status.sh.
+executor: cluster-generic
+cluster-generic-submit-cmd: >-
+  python workflow/scripts/sge_submit.py
+  {rule} {threads} {resources.mem_mb} {resources.runtime}
+  {resources.sge_pe} {resources.gpu}
+cluster-generic-status-cmd: "bash workflow/scripts/sge_status.sh"
+cluster-generic-cancel-cmd: "qdel"
+
 jobs: 40
 keep-going: true
 rerun-incomplete: true
-restart-times: 4
+restart-times: 2
 latency-wait: 100
 rerun-triggers:
   - mtime
@@ -11,5 +24,5 @@ resources:
 default-resources:
   - mem_mb=4000
   - runtime=120
-sge-keep-successful-logs: true
-sge-logdir: results/logs/cluster
+  - sge_pe="smp"
+  - gpu=0

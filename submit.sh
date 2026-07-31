@@ -44,6 +44,10 @@ mkdir -p "${FOLDER}" "${SING_PREFIX}" "${SING_PREFIX}/cache"
 export SINGULARITY_TMPDIR="${SING_TMPDIR}" APPTAINER_TMPDIR="${SING_TMPDIR}"
 export SINGULARITY_CACHEDIR="${SING_PREFIX}/cache" APPTAINER_CACHEDIR="${SING_PREFIX}/cache"
 
+# Where the cluster-generic qsub wrapper (workflow/scripts/sge_submit.py) writes
+# scheduler stdout/stderr for each job.
+export SGE_LOGDIR="${FOLDER}"
+
 CONTAINER_ARGS=(--use-singularity)
 if [ "${CONTAINER_ENGINE}" = "apptainer" ]; then
     CONTAINER_ARGS=(--use-apptainer)
@@ -57,7 +61,6 @@ fi
 snakemake \
     --profile workflow/profiles/sge \
     --configfile config/config.yaml \
-    --sge-logdir "${FOLDER}" \
     --apptainer-prefix "${SING_PREFIX}" \
     "${CONTAINER_ARGS[@]}" \
     "${SINGULARITY_ARGS[@]}" \

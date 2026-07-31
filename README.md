@@ -69,7 +69,11 @@ There is no top-level `Snakefile`: Snakemake automatically discovers
   required.** Dorado and Modkit use local `.sif` images (or ONT image URIs); the
   generic tools (minimap2/samtools, NanoPlot, MultiQC, Python) use pinned public
   images that Snakemake pulls automatically on first run.
-- Optional: `snakemake-executor-plugin-sge` for SGE cluster execution.
+- Optional, for SGE cluster execution: Snakemake 8+ and
+  `snakemake-executor-plugin-cluster-generic`. The SGE profile uses the
+  cluster-generic executor with a `qsub` wrapper and a `qstat`-based status
+  check (`workflow/scripts/sge_submit.py` / `sge_status.sh`), so it works on
+  clusters where `qacct` accounting is unavailable.
 
 Dorado and Modkit are the only images you supply. Pull them once, e.g.:
 
