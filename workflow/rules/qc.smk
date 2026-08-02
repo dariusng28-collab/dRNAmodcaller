@@ -34,11 +34,10 @@ rule run_provenance:
 rule qc_report:
     input:
         bam_unaligned=out_path("basecalled/{sample}/{sample}.merged.unaligned.bam"),
-        bam=out_path("bams/{alignment}/{sample}/{sample}.bam"),
-        bai=out_path("bams/{alignment}/{sample}/{sample}.bam.bai"),
+        flagstat=out_path("qc/samtools/{alignment}.{sample}.flagstat.txt"),
+        idxstats=out_path("qc/samtools/{alignment}.{sample}.idxstats.txt"),
         summary=out_path("modkit/{alignment}/{sample}.summary.tsv"),
         sample_probs=out_path("sample_probs/{alignment}/{sample}/probabilities.tsv"),
-        raw=out_path("modkit/{alignment}/{sample}.raw.bed"),
         filtered=out_path("bedMethyl/{alignment}/{sample}.filtered.bed"),
         mod_beds=MOD_SPLIT_OUTPUTS
     output:
@@ -49,7 +48,7 @@ rule qc_report:
         MINIMAP_CONTAINER
     threads: 2
     resources:
-        mem_mb=8000,
+        mem_mb=4000,
         runtime=120,
         sge_pe="smp"
     params:
@@ -60,39 +59,39 @@ rule qc_report:
         """
         mkdir -p $(dirname {output.report}) $(dirname {log})
 
+        # Cosmetic per-sample digest. Reuse the already-computed samtools stats
+        # and only *sample* reads for poly(A), so it stays fast on multi-GB BAMs;
+        # and it must never fail the run (aggregate QC lives in MultiQC), hence
+        # `set +e` and a final `exit 0`.
+        set +e
         {{
         echo "===== QC SUMMARY - {wildcards.sample} ({wildcards.alignment}) ====="
         echo "Date: $(date)"
         echo ""
 
-        echo "--- Total reads (unaligned BAM) ---"
-        echo "Reads: $(samtools view -c -@ {threads} {input.bam_unaligned})"
+        echo "--- Alignment {wildcards.alignment} (flagstat) ---"
+        cat {input.flagstat}
         echo ""
 
-        echo "--- Poly(A) tail length (pt tag, estimated reads only) ---"
-        samtools view -@ {threads} {input.bam_unaligned} \
+        echo "--- {params.idxstats_label} (top 25) ---"
+        sort -k3 -rn {input.idxstats} | head -25
+        echo ""
+
+        echo "--- Poly(A) tail length (pt tag; sampled up to 200k reads) ---"
+        samtools view -@ {threads} {input.bam_unaligned} 2>/dev/null | head -n 200000 \
             | grep -oP 'pt:i:\\K[0-9]+' \
             | awk 'BEGIN{{n=0;s=0;mn=1e18;mx=0}}
                    $1>0{{n++;s+=$1;if($1<mn)mn=$1;if($1>mx)mx=$1}}
                    END{{if(n>0) printf "Reads with estimate: %d\\nMean: %.1f\\nMin: %d\\nMax: %d\\n",n,s/n,mn,mx;
-                        else print "Reads with estimate: 0"}}' || true
-        echo ""
-
-        echo "--- Alignment {wildcards.alignment} (flagstat) ---"
-        samtools flagstat --threads {threads} {input.bam}
-        echo ""
-
-        echo "--- {params.idxstats_label} (idxstats, top 25) ---"
-        samtools idxstats {input.bam} | sort -k3 -rn | head -25 || true
+                        else print "Reads with estimate: 0"}}'
         echo ""
 
         echo "--- Modification probabilities (sample-probs) ---"
         cat {input.sample_probs}
         echo ""
 
-        echo "--- Modified sites ---"
-        echo "Raw:      $(grep -vc '^#' {input.raw}      || true)"
-        echo "Filtered: $(grep -vc '^#' {input.filtered} || true)"
+        echo "--- Filtered modified sites ---"
+        echo "Filtered: $(wc -l < {input.filtered})"
         echo ""
 
         echo "--- Sites per modification type ---"
@@ -108,6 +107,7 @@ rule qc_report:
         echo "--- modkit summary ---"
         cat {input.summary}
         }} > {output.report} 2> {log}
+        exit 0
         """
 
 
